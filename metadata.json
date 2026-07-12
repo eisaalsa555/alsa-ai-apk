@@ -1,0 +1,6 @@
+{
+  "name": "Alsa Ai Bridge",
+  "description": "Secure local background automation bridge connecting Android devices with the official administrative panel at www.alsa-ai.in",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Alsa Ai Bridge</string>
+    <string name="accessibility_service_description">Automates workflows on authorized administrative interfaces for Alsa Ai Bridge.</string>
+</resources>
