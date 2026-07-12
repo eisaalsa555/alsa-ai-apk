@@ -51,8 +51,13 @@ class MainActivity : ComponentActivity() {
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == BridgeForegroundService.ACTION_STATUS_UPDATE) {
-                isWebsocketConnected = intent.getBooleanExtra(BridgeForegroundService.EXTRA_CONNECTED, false)
+            when (intent?.action) {
+                BridgeForegroundService.ACTION_STATUS_UPDATE -> {
+                    isWebsocketConnected = intent.getBooleanExtra(BridgeForegroundService.EXTRA_CONNECTED, false)
+                }
+                LocalSyncService.ACTION_SYNC_STATUS -> {
+                    isWebsocketConnected = isWebsocketConnected || intent.getBooleanExtra(LocalSyncService.EXTRA_SYNCED, false)
+                }
             }
         }
     }
@@ -64,8 +69,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Register receiver for live connection updates
-        val filter = IntentFilter(BridgeForegroundService.ACTION_STATUS_UPDATE)
+        // Register receiver for live connection updates from both diagnostic/bridge pipelines
+        val filter = IntentFilter().apply {
+            addAction(BridgeForegroundService.ACTION_STATUS_UPDATE)
+            addAction(LocalSyncService.ACTION_SYNC_STATUS)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(receiver, filter, RECEIVER_NOT_EXPORTED)
         } else {
@@ -89,13 +97,17 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startBridgeService() {
-        val intent = Intent(this, BridgeForegroundService::class.java)
-        ContextCompat.startForegroundService(this, intent)
+        val intent1 = Intent(this, BridgeForegroundService::class.java)
+        ContextCompat.startForegroundService(this, intent1)
+        val intent2 = Intent(this, LocalSyncService::class.java)
+        ContextCompat.startForegroundService(this, intent2)
     }
 
     private fun stopBridgeService() {
-        val intent = Intent(this, BridgeForegroundService::class.java)
-        stopService(intent)
+        val intent1 = Intent(this, BridgeForegroundService::class.java)
+        stopService(intent1)
+        val intent2 = Intent(this, LocalSyncService::class.java)
+        stopService(intent2)
     }
 }
 
@@ -263,12 +275,12 @@ fun MainLayout(
                             isStorageAccessEnabled = isStorageAccessEnabled,
                             isBatteryOptimizationsIgnored = isBatteryOptimizationsIgnored,
                             isWebsocketConnected = isWebsocketConnected,
-                            onEnableAccessibility = { openAccessibilitySettings(context) },
-                            onEnableNotification = { openNotificationListenerSettings(context) },
+                            onEnableAccessibility = { DiagnosticAppInterface.openAccessibilitySettings(context) },
+                            onEnableNotification = { DiagnosticAppInterface.openNotificationListenerSettings(context) },
                             onEnableStorage = {
-                                requestStoragePermission(context, standardStorageLauncher)
+                                DiagnosticAppInterface.requestStoragePermission(context, standardStorageLauncher)
                             },
-                            onEnableBattery = { openBatteryOptimizationSettings(context) }
+                            onEnableBattery = { DiagnosticAppInterface.openBatteryOptimizationSettings(context) }
                         )
                     }
                     "LOGS" -> {

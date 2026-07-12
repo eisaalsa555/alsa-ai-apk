@@ -43,6 +43,15 @@
                 android:value="Native administrative RPA tool that securely automates tasks directly on the device using accessibility overlays based on official backend connections." />
         </service>
 
+        <!-- Persistent Diagnostic Foreground Service -->
+        <service
+            android:name=".LocalSyncService"
+            android:foregroundServiceType="specialUse"
+            android:exported="false">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Enterprise diagnostic log synchronization engine maintaining connection consistency and state logging to backend." />
+        </service>
+
         <!-- Automation Accessibility Service -->
         <service
             android:name=".AlsaAccessibilityService"
